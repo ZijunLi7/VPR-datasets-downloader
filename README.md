@@ -35,6 +35,31 @@ The directory tree that is generated is as follows:
 
 Most datasets are used only for testing, and therefore do not have a train and validation set.
 
+### Ford Multi-AV Seasonal
+
+`format_ford.py` converts an existing Ford Multi-AV Seasonal download without
+modifying the source tree. It aligns camera PNG timestamps with `/gps`, converts
+the fixes to UTM labels, retains `/pose_ground_truth` in the manifest, spatially
+samples the route, and creates a test-only VPR dataset. GPS-derived UTM is used
+because Ford's map-frame poses are not shared across seasonal maps. By default,
+July V2 center-camera images form the database and October V2 center-camera
+images form the queries. Absolute symlinks are used by default to avoid copying
+the multi-terabyte source data.
+
+```bash
+conda activate VPR
+python format_ford.py \
+  --raw-root /mnt/Ford_seasonal \
+  --output-root datasets/ford_seasonal
+```
+
+Inspect the full set of options with `python format_ford.py --help`. In
+particular, `--dry-run` performs pose/image alignment and reports dataset
+statistics without writing output, while `--transfer-mode copy` produces a
+self-contained copy. Generated `manifest.csv` and `metadata.json` files record
+the source path, timestamps, full Ford map-frame pose, split configuration, and
+query/database coverage.
+
 ## Available datasets
 
 The list of datasets that you can download with this codebase is the following:

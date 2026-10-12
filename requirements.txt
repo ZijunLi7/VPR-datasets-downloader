@@ -2,6 +2,7 @@ staticmap
 tqdm
 mega.py
 requests
+rosbags
 opencv_contrib_python
 scikit_image
 scipy
