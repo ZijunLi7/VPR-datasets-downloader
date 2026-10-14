@@ -60,6 +60,32 @@ self-contained copy. Generated `manifest.csv` and `metadata.json` files record
 the source path, timestamps, full Ford map-frame pose, split configuration, and
 query/database coverage.
 
+## Taipei101 forward-view preprocessing
+
+`format_taipei101.py` prepares every local panorama as one **90°×90° square forward view**, with relative yaw=0 and pitch=0. All capture years are retained in `images/all`; query years and closed-set filtering are selected only when evaluating with `main.py`.
+
+From this repository:
+
+```bash
+python3 format_taipei101.py \
+  --raw-root /home/sxl/lzj/Data_raw/TAIBEI101 \
+  --output-root datasets/taipei101_forward
+```
+
+The default output is 512×512; `--size` changes the square side while preserving the 90° field of view. Forward means the panorama image center, without calibrated vehicle/world-heading correction. Existing stitching artifacts remain. Outputs use standard UTM filenames with a `YYYYMM` timestamp, plus `images/all_images_paths.txt`, `reports/images.csv`, `reports/errors.csv`, and `reports/summary.json`.
+
+Use `--dry-run` to inspect metadata without writing images, `--resume` to reuse validated outputs, `--image-workers`/`--metadata-workers` to control concurrency, and `--max-input-width 0` for full-resolution source sampling (default 4096). Optional `--metadata-csv` accepts a trusted complete CSV with `pano_id,longitude,latitude,date`, including a previous complete `reports/images.csv`; its IDs and coordinates must match the index. Cached dates are trusted. Raw inputs are read-only; wait for summary status `complete` before evaluation. Old split-directory outputs require a new output root.
+
+From `VPR-methods-evaluation`:
+
+```bash
+python3 main.py --method cosplace --backbone ResNet18 --descriptors_dimension 512 \
+  --images_folder ../VPR-datasets-downloader/datasets/taipei101_forward/images/all \
+  --query_years 2024 2025 --positive_dist_threshold 25
+```
+
+All remaining years become database. Queries without a distance-positive in the actual sampled database are removed from this run before feature extraction, without deleting images. Multiple evaluation thresholds use the smallest threshold for filtering, so all retained queries have positives at every reported radius. Logs save the split summary, filtered queries with distances, and actual path lists. This mode uses position labels, not view-overlap labels. Existing St Lucia two-directory evaluation remains supported.
+
 ## Available datasets
 
 The list of datasets that you can download with this codebase is the following:
